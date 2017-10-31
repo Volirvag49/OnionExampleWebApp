@@ -4,24 +4,29 @@ using System.Data.Entity;
 using Domain.Model;
 using Domain.Interfaces;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Data
 {
-    public class Repository<T> : IRepository<T>, IDisposable where T : BaseEntity
+    public class GenericRepository<T> : IGenericRepository<T>, IDisposable where T : BaseEntity
     {
         protected AppDbContext dbContext;
-        // используется использовать с любой сущностью
         protected DbSet<T> dbSet;
 
-        public Repository(AppDbContext context)
+        public GenericRepository(AppDbContext context)
         {
             this.dbContext = context;
             dbSet = context.Set<T>();
         }
 
-        public IEnumerable<T> GetAll()
+        public ICollection<T> GetAll()
         {
-            return dbSet.AsEnumerable();
+            return dbSet.ToList();
+        }
+
+        public virtual async Task<ICollection<T>> GetAllAsync()
+        {
+            return await dbSet.ToListAsync();
         }
 
         public T GetById(int? id)
@@ -29,20 +34,28 @@ namespace Infrastructure.Data
             return dbSet.Find(id);
         }
 
+        public async Task<T> GetByIdAsyn(int? id)
+        {
+            return  await dbSet.FindAsync(id);
+        }
+
         public void Create(T entity)
         {
             dbSet.Add(entity);
         }
 
+       
         public void Update(T entity)
         {
             dbContext.Entry(entity).State = EntityState.Modified;
         }
 
+
         public void Delete(T entity)
         {
             dbSet.Remove(entity);
         }
+
 
         // Реализация IDisposable
         private bool disposed = false;
@@ -63,6 +76,5 @@ namespace Infrastructure.Data
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
     }
 }

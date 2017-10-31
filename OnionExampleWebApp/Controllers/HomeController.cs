@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using Infrastructure.Data;
 using Domain.Model;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace OnionExampleWebApp.Controllers
 {
@@ -19,23 +20,24 @@ namespace OnionExampleWebApp.Controllers
             return View();
         }
 
-        public ActionResult List()
+        public async Task<ActionResult> List()
         {
-            var readers = unitOfWork.ReaderRepository.GetAll();
+            var readers = await unitOfWork.ReaderRepository.GetAllAsync();
             return View(readers);
         }
 
-        public ActionResult Details(int? id)
+        public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            Reader reader = unitOfWork.ReaderRepository.GetById(id);
+            Reader reader = await unitOfWork.ReaderRepository.GetByIdAsyn(id);
+
             if (reader != null)
             {
-                return PartialView("Details", reader);
+                return View("Details", reader);
             }
 
             return View(reader);
@@ -49,12 +51,13 @@ namespace OnionExampleWebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Reader reader)
+        public async Task<ActionResult> Create(Reader reader)
         {
             if (ModelState.IsValid)
             {
                 unitOfWork.ReaderRepository.Create(reader);
-                unitOfWork.Commit();
+                await unitOfWork.CommitAsync();
+
                 return RedirectToAction("List");
             }
 
@@ -62,14 +65,14 @@ namespace OnionExampleWebApp.Controllers
         }
 
         [HttpGet]
-        public ActionResult Edit(int? id)
+        public async Task<ActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            Reader reader = unitOfWork.ReaderRepository.GetById(id);
+            Reader reader = await unitOfWork.ReaderRepository.GetByIdAsyn(id);
             if (reader != null)
             {
                 return View(reader);
@@ -80,12 +83,12 @@ namespace OnionExampleWebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(Reader reader)
+        public async Task<ActionResult> Edit(Reader reader)
         {
             if (ModelState.IsValid)
             {
                 unitOfWork.ReaderRepository.Update(reader);
-                unitOfWork.Commit();
+                await unitOfWork.CommitAsync();
 
                 return RedirectToAction("List");
             }
@@ -94,14 +97,15 @@ namespace OnionExampleWebApp.Controllers
         }
 
         [HttpGet]
-        public ActionResult Delete(int? id)
+        public async Task<ActionResult> Delete(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            Reader reader = unitOfWork.ReaderRepository.GetById(id);
+            Reader reader = await unitOfWork.ReaderRepository.GetByIdAsyn(id);
+
             if (reader != null)
             {
                 return View(reader);
@@ -112,20 +116,20 @@ namespace OnionExampleWebApp.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult DeleteConfirmed(int? id)
+        public async Task<ActionResult> DeleteConfirmed(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            Reader reader = unitOfWork.ReaderRepository.GetById(id);
+            Reader reader = await unitOfWork.ReaderRepository.GetByIdAsyn(id);
             if (reader != null)
             {
                 unitOfWork.ReaderRepository.Delete(reader);
-                unitOfWork.Commit();
-                return RedirectToAction("List");
+                await unitOfWork.CommitAsync();
 
+                return RedirectToAction("List");
             }
 
             return View(reader);

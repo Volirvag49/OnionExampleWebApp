@@ -1,6 +1,7 @@
 ﻿using System;
 using Domain.Model;
 using Domain.Interfaces;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Data
 {
@@ -10,30 +11,30 @@ namespace Infrastructure.Data
         private AppDbContext dbContext = new AppDbContext();
 
         // Приватные члены
-        private Repository<Book> bookRepository;
-        private Repository<Reader> readerRepository;
+        private GenericRepository<Book> bookRepository;
+        private GenericRepository<Reader> readerRepository;
 
         // Паттерн синглтон для каждого репозитория
-        public IRepository<Book> BookRepository
+        public IGenericRepository<Book> BookRepository
         {
             get
             {
                 if (bookRepository == null)
                 {
-                    bookRepository = new Repository<Book>(dbContext);
+                    bookRepository = new GenericRepository<Book>(dbContext);
                 }
                 return bookRepository;
             }
 
         }
 
-        public IRepository<Reader> ReaderRepository
+        public IGenericRepository<Reader> ReaderRepository
         {
             get
             {
                 if (readerRepository == null)
                 {
-                    readerRepository = new Repository<Reader>(dbContext);
+                    readerRepository = new GenericRepository<Reader>(dbContext);
                 }
                 return readerRepository;
             }
@@ -46,6 +47,11 @@ namespace Infrastructure.Data
             dbContext.SaveChanges();
         }
 
+        public async Task CommitAsync()
+        {
+            await dbContext.SaveChangesAsync();
+        }
+
         // Реализация интерфейса IDisposible
         private bool disposed = false;
 
@@ -55,7 +61,7 @@ namespace Infrastructure.Data
             {
                 if (disposing)
                 {
-                    dbContext.Dispose();
+                    dbContext.Dispose();                    
                 }
             }
         }
